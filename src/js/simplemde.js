@@ -33,6 +33,7 @@ var bindings = {
 	"toggleHeading1": toggleHeading1,
 	"toggleHeading2": toggleHeading2,
 	"toggleHeading3": toggleHeading3,
+	"toggleHeading4": toggleHeading4,
 	"cleanBlock": cleanBlock,
 	"drawTable": drawTable,
 	"drawHorizontalRule": drawHorizontalRule,
@@ -95,7 +96,10 @@ function fixShortcut(name) {
  */
 function createIcon(options, enableTooltips, shortcuts) {
 	options = options || {};
-	var el = document.createElement("a");
+	var tag = "a";
+	if(options.tagName)
+		tag = options.tagName;
+	var el = document.createElement(tag);
 	enableTooltips = (enableTooltips == undefined) ? true : enableTooltips;
 
 	if(options.title && enableTooltips) {
@@ -106,7 +110,8 @@ function createIcon(options, enableTooltips, shortcuts) {
 			el.title = el.title.replace("Alt", "⌥");
 		}
 	}
-
+	if(options.text)
+		el.innerText = options.text;
 	el.tabIndex = -1;
 	el.className = options.className;
 	return el;
@@ -583,6 +588,14 @@ function toggleHeading3(editor) {
 	_toggleHeading(cm, undefined, 3);
 }
 
+/**
+ * Action for toggling heading size 4
+ */
+function toggleHeading4(editor) {
+	var cm = editor.codemirror;
+	_toggleHeading(cm, undefined, 4);
+}
+
 
 /**
  * Action for toggling ul.
@@ -753,7 +766,7 @@ function togglePreview(editor) {
 	var preview = wrapper.lastChild;
 	if(!preview || !/editor-preview/.test(preview.className)) {
 		preview = document.createElement("div");
-		preview.className = "editor-preview";
+		preview.className = "editor-preview " + editor.options.previewClassName;
 		wrapper.appendChild(preview);
 	}
 	if(/editor-preview-active/.test(preview.className)) {
@@ -864,13 +877,21 @@ function _toggleHeading(cm, direction, size) {
 					} else {
 						text = "## " + text.substr(currHeadingLevel + 1);
 					}
-				} else {
+				} else if(size == 3) {
 					if(currHeadingLevel <= 0) {
 						text = "### " + text;
 					} else if(currHeadingLevel == size) {
 						text = text.substr(currHeadingLevel + 1);
 					} else {
 						text = "### " + text.substr(currHeadingLevel + 1);
+					}
+				} else {
+					if(currHeadingLevel <= 0) {
+						text = "#### " + text;
+					} else if(currHeadingLevel == size) {
+						text = text.substr(currHeadingLevel + 1);
+					} else {
+						text = "#### " + text.substr(currHeadingLevel + 1);
 					}
 				}
 			}
@@ -1120,6 +1141,12 @@ var toolbarBuiltInButtons = {
 		className: "fa fa-header fa-header-x fa-header-3",
 		title: "Small Heading"
 	},
+	"heading-4": {
+		name: "heading-4",
+		action: toggleHeading4,
+		className: "fa fa-header fa-header-x fa-header-4",
+		title: "Small Heading"
+	},
 	"separator-1": {
 		name: "separator-1"
 	},
@@ -1331,10 +1358,10 @@ function SimpleMDE(options) {
 
 
 	// Add default preview rendering function
-	if(!options.previewRender) {
+	if(!options.previewRender && options.previewRenderExtend) {
 		options.previewRender = function(plainText) {
 			// Note: "this" refers to the options object
-			return this.parent.markdown(plainText);
+			return options.previewRenderExtend(this.parent.markdown(plainText));
 		};
 	}
 
@@ -1350,7 +1377,8 @@ function SimpleMDE(options) {
 
 
 	// Merging the promptTexts, with the given options
-	options.promptTexts = promptTexts;
+	if(!options.promptTexts)
+		options.promptTexts = promptTexts;
 
 
 	// Merging the blockStyles, with the given options
@@ -1599,7 +1627,7 @@ SimpleMDE.prototype.createSideBySide = function() {
 
 	if(!preview || !/editor-preview-side/.test(preview.className)) {
 		preview = document.createElement("div");
-		preview.className = "editor-preview-side";
+		preview.className = "editor-preview-side " + this.options.previewClassName;
 		wrapper.parentNode.insertBefore(preview, wrapper.nextSibling);
 	}
 
@@ -1643,6 +1671,8 @@ SimpleMDE.prototype.createToolbar = function(items) {
 	for(i = 0; i < items.length; i++) {
 		if(toolbarBuiltInButtons[items[i]] != undefined) {
 			items[i] = toolbarBuiltInButtons[items[i]];
+			if(this.options.lang && this.options.lang[items[i].name])
+				items[i].title = this.options.lang[items[i].name];
 		}
 	}
 
@@ -1873,6 +1903,7 @@ SimpleMDE.toggleHeadingBigger = toggleHeadingBigger;
 SimpleMDE.toggleHeading1 = toggleHeading1;
 SimpleMDE.toggleHeading2 = toggleHeading2;
 SimpleMDE.toggleHeading3 = toggleHeading3;
+SimpleMDE.toggleHeading4 = toggleHeading4;
 SimpleMDE.toggleCodeBlock = toggleCodeBlock;
 SimpleMDE.toggleUnorderedList = toggleUnorderedList;
 SimpleMDE.toggleOrderedList = toggleOrderedList;
@@ -1916,6 +1947,9 @@ SimpleMDE.prototype.toggleHeading2 = function() {
 };
 SimpleMDE.prototype.toggleHeading3 = function() {
 	toggleHeading3(this);
+};
+SimpleMDE.prototype.toggleHeading4 = function() {
+	toggleHeading4(this);
 };
 SimpleMDE.prototype.toggleCodeBlock = function() {
 	toggleCodeBlock(this);

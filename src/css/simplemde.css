@@ -168,6 +168,10 @@
     content: "3";
 }
 
+.editor-toolbar a.fa-header-4:after {
+    content: "4";
+}
+
 .editor-toolbar a.fa-header-bigger:after {
     content: "▲";
 }

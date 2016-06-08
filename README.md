@@ -132,12 +132,36 @@ var simplemde = new SimpleMDE({
 		table: ["", "\n\n| Column 1 | Column 2 | Column 3 |\n| -------- | -------- | -------- |\n| Text     | Text      | Text     |\n\n"],
 	},
 	lineWrapping: false,
+	lang: {
+		"bold": "Kalın",
+		"italic": "Eğik",
+		"strikethrough": "",
+		"heading-1": "Başlık 1",
+		"heading-2": "Başlık 2",
+		"heading-3": "Başlık 3",
+		"heading-4": "Başlık 4",
+		"code": "Kod",
+		"quote": "Alıntı",
+		"unordered-list": "Genel Liste",
+		"ordered-list": "Numaralı Liste",
+		"link": "Bağlantı Oluştur",
+		"image": "Resim Ekle",
+		"table": "Tablo Ekle",
+		"horizontal-rule": "Yatay Çizgi Ekle",
+		"preview": "Önizlemeyi Aç/Kapa",
+		"side-by-side": "Yan Önizlemeyi Aç/Kapa",
+		"fullscreen": "Tam Ekran Yap/Çık",
+		"guide": "Rehber",
+		"undo": "Geri Al",
+		"redo": "İleri Al"
+	},
 	parsingConfig: {
 		allowAtxHeaderWithoutSpace: true,
 		strikethrough: false,
 		underscoresBreakWords: true,
 	},
 	placeholder: "Type here...",
+	previewClassName: "markdown-body",
 	previewRender: function(plainText) {
 		return customMarkdownParser(plainText); // Returns HTML from a custom parser
 	},
@@ -147,6 +171,26 @@ var simplemde = new SimpleMDE({
 		}, 250);
 
 		return "Loading...";
+	},
+	previewRenderExtend: function(v) {
+		/* Definition Lists*/
+		v = v.replace(
+			/^(<li>|<p>)(.*)\n:[\t| ](.*?[\S\s]*?)(<\/p>|<ul>|<\/li>)$/gmi, 
+			function myFunction(t, tag1, x, y, tag2){
+				if(tag1 == '<p>') {
+				tag1 = '';
+				tag2 = '';
+				}
+				return tag1+'<dl><dt>'+x+'</dt><dd>'+y+'</dd></dl>'+tag2;
+			}
+		);
+
+		return v;
+	}
+	promptTexts: {
+		link: "Bağlantı Adresi:",
+		image: "Resim Bağlantısı:",
+		def: "Tanımlanacak İsim:"
 	},
 	promptURLs: true,
 	renderingConfig: {

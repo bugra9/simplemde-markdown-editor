@@ -10,7 +10,7 @@
 	"wysiwyg"
   ],
   "homepage": "https://github.com/NextStepWebs/simplemde-markdown-editor",
-  "main": "./src/js/simplemde.js",
+  "main": "./dist/simplemde.min",
   "license": "MIT",
   "company": "Next Step Webs, Inc.",
   "author": {
